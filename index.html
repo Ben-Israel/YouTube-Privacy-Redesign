@@ -874,9 +874,9 @@
     </div>
 
     <div class="feedback-toast-container" id="feedbackToast">
-        <span id="toastMessageText">Successfully modified playlist privacy settings</span>
-        <a class="toast-undo-anchor" id="toastUndoBtn">Undo</a>
-    </div>
+    <span id="toastMessageText">Successfully Updated Playlist Privacy</span>
+    <a class="toast-undo-anchor" id="toastUndoBtn">Undo  (Ctrl + Z)</a>
+</div>
 
     <script>
         // Core Database State Baseline Engine Model
@@ -1181,6 +1181,18 @@
                 databaseRollbackCache = null;
                 feedbackToast.classList.remove('active');
                 synchronizeAndRenderViews();
+            }
+        });
+
+        // Global keyboard event listener to handle system-wide Ctrl+Z rollback triggers
+        window.addEventListener('keydown', (e) => {
+        // Check if the user is holding Ctrl (or Meta/Cmd on Mac) AND pressing the 'z' key
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+            // Only trigger rollback if the feedback toast is actively visible on screen
+            if (feedbackToast.classList.contains('active')) {
+            e.preventDefault(); // Stop standard browser undo side-effects
+            toastUndoBtn.click(); // Programmatically trigger our existing undo action logic
+                }
             }
         });
 

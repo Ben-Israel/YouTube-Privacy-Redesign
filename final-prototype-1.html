@@ -1,0 +1,1191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Studio - Playlists Re-Engineering Prototype</title>
+    <!-- Google Fonts & Material Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-main: #1f1f1f;
+            --bg-sidebar: #282828;
+            --bg-toolbar: #f9f9f9;
+            --text-dark: #aaa;
+            --text-light: #fff;
+            --border-color: #3e3e3e;
+            --yt-blue: #3ea6ff;
+            --yt-red: #ff0000;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Roboto', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-light);
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Top Navigation Header Bar */
+        header {
+            height: 56px;
+            background-color: var(--bg-sidebar);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            z-index: 10;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .menu-icon {
+            color: var(--text-light);
+            cursor: pointer;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .logo-icon {
+            color: var(--yt-red);
+            font-size: 28px;
+        }
+
+        .logo-text {
+            font-weight: 500;
+            font-size: 18px;
+            letter-spacing: -0.5px;
+        }
+
+        .logo-subtext {
+            color: var(--text-dark);
+            font-size: 12px;
+            margin-left: 4px;
+            align-self: flex-end;
+            margin-bottom: 2px;
+        }
+
+        .search-container {
+            width: 600px;
+            background: #121212;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            padding: 6px 12px;
+            gap: 8px;
+        }
+
+        .search-container input {
+            background: transparent;
+            border: none;
+            color: var(--text-light);
+            width: 100%;
+            outline: none;
+            font-size: 14px;
+        }
+
+        .search-container span {
+            color: var(--text-dark);
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #555;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        /* App Workspace Layout Structure */
+        .workspace {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Left Static Navigation Panel Sidebar */
+        aside {
+            width: 256px;
+            background-color: var(--bg-sidebar);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            padding-top: 12px;
+        }
+
+        .creator-profile {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 16px;
+            border-bottom: 1px solid var(--border-color);
+            text-align: center;
+        }
+
+        .profile-pic {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: #444;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+        }
+
+        .profile-name {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .profile-handle {
+            color: var(--text-dark);
+            font-size: 12px;
+            margin-bottom: 12px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 24px;
+            gap: 16px;
+            color: var(--text-light);
+            text-decoration: none;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background-color: rgba(255, 255, 255, 0.05);
+            border-left: 4px solid var(--yt-red);
+            padding-left: 20px;
+        }
+
+        .nav-item span {
+            color: var(--text-dark);
+        }
+
+        .nav-item.active span {
+            color: var(--yt-red);
+        }
+
+        /* Main Scrollable Content Area Dashboard */
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .content-header {
+            padding: 24px 32px 0 32px;
+        }
+
+        .content-header h1 {
+            font-size: 24px;
+            font-weight: 500;
+            margin-bottom: 16px;
+        }
+
+        /* Channel Tab Container View Layout Hooks */
+        .tabs-container {
+            display: flex;
+            border-bottom: 1px solid var(--border-color);
+            gap: 24px;
+            position: relative;
+        }
+
+        .tab {
+            padding: 12px 4px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-dark);
+            cursor: pointer;
+            text-decoration: none;
+            border-bottom: 2px solid transparent;
+        }
+
+        .tab.active {
+            color: var(--text-light);
+            border-bottom: 2px solid var(--text-light);
+        }
+
+        /* Interactive Views Layout Sub-controls Panel */
+        .view-controls-panel {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 32px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .filter-box {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-dark);
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .layout-toggle-group {
+            display: flex;
+            background: #121212;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 2px;
+        }
+
+        .toggle-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-dark);
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+        }
+
+        .toggle-btn.active {
+            background: var(--border-color);
+            color: var(--text-light);
+        }
+
+        /* View Container Wrappers */
+        .view-wrapper {
+            flex: 1;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .view-layout {
+            display: none;
+            padding: 0 32px 32px 32px;
+        }
+
+        .view-layout.active {
+            display: block;
+        }
+
+        /* Prototype View 1: Cohesive Row Checkbox Data Table Grid Layout */
+        .data-table-container {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        .data-table-container th {
+            color: var(--text-dark);
+            font-size: 12px;
+            font-weight: 500;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .data-table-container td {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 13px;
+            vertical-align: middle;
+        }
+
+        .data-table-container tr:hover td {
+            background-color: rgba(255, 255, 255, 0.02);
+        }
+
+        .col-check { width: 48px; }
+        .col-playlist { width: 340px; }
+        .col-type { width: 100px; }
+        .col-visibility { width: 140px; }
+        .col-updated { width: 140px; }
+        .col-count { width: 110px; }
+        .col-views { width: 90px; }
+
+        input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            accent-color: var(--text-light);
+            cursor: pointer;
+        }
+
+        .playlist-cell {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .playlist-thumb-wrapper {
+            width: 120px;
+            height: 68px;
+            background: #333;
+            border-radius: 4px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .playlist-thumb-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .playlist-overlay-badge {
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 40px;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            gap: 4px;
+        }
+
+        .playlist-meta h4 {
+            font-size: 14px;
+            font-weight: 400;
+            margin-bottom: 4px;
+            color: var(--text-light);
+        }
+
+        .playlist-meta p {
+            color: var(--text-dark);
+            font-size: 12px;
+        }
+
+        .visibility-badge-inline {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .visibility-badge-inline span {
+            font-size: 18px;
+        }
+
+        /* Sliding Macro Context Edit Toolbar Layout */
+        .macro-edit-toolbar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 48px;
+            background-color: var(--text-light);
+            color: #0d0d0d;
+            display: flex;
+            align-items: center;
+            padding: 0 32px;
+            gap: 24px;
+            transform: translateY(-100%);
+            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 5;
+            font-size: 14px;
+        }
+
+        .macro-edit-toolbar.visible {
+            transform: translateY(0);
+        }
+
+        .toolbar-count-status {
+            font-weight: 500;
+            border-right: 1px solid #ccc;
+            padding-right: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+        }
+
+        .toolbar-dropdown-anchor {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            padding: 6px 12px;
+            border-radius: 4px;
+            position: relative;
+        }
+
+        .toolbar-dropdown-anchor:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+
+        .toolbar-close-icon {
+            margin-left: auto;
+            cursor: pointer;
+            color: #606060;
+        }
+
+        /* Nested Dropdown Parameters Checklist Overlay Menu */
+        .parameters-checklist-overlay {
+            position: absolute;
+            top: 44px;
+            left: 0;
+            background: #fff;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            width: 220px;
+            display: none;
+            flex-direction: column;
+            z-index: 20;
+            padding: 8px 0;
+        }
+
+        .parameters-checklist-overlay.open {
+            display: flex;
+        }
+
+        .overlay-menu-row {
+            padding: 10px 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: #0d0d0d;
+        }
+
+        .overlay-menu-row:hover {
+            background-color: #f5f5f5;
+        }
+
+        /* Localized State Split Slider Dashboard Dialog Panel */
+        .state-slider-dialog-panel {
+            position: absolute;
+            top: 48px;
+            left: 0;
+            right: 0;
+            background: #212121;
+            border-bottom: 1px solid var(--border-color);
+            padding: 24px 32px;
+            display: none;
+            flex-direction: column;
+            gap: 16px;
+            color: var(--text-light);
+            z-index: 4;
+        }
+
+        .state-slider-dialog-panel.open {
+            display: flex;
+        }
+
+        .slider-panel-row {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .slider-panel-title {
+            font-size: 14px;
+            color: var(--text-dark);
+            width: 100px;
+        }
+
+        .custom-select-wrapper {
+            background: #121212;
+            border: 1px solid var(--border-color);
+            padding: 8px 12px;
+            border-radius: 4px;
+            width: 200px;
+            color: var(--text-light);
+            outline: none;
+            cursor: pointer;
+        }
+
+        .panel-action-buttons-group {
+            display: flex;
+            gap: 12px;
+            margin-left: auto;
+        }
+
+        .panel-btn {
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+        }
+
+        .panel-btn-cancel {
+            background: transparent;
+            color: var(--text-light);
+        }
+
+        .panel-btn-cancel:hover {
+            background: rgba(255,255,255,0.05);
+        }
+
+        .panel-btn-update {
+            background: var(--text-light);
+            color: #0d0d0d;
+        }
+
+        .panel-btn-update:disabled {
+            background: #555;
+            color: #888;
+            cursor: not-allowed;
+        }
+
+        /* Prototype View 3: Visual Spatial Kanban Column Board Swim Lanes View Layout */
+        .kanban-board-workspace {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-top: 16px;
+            height: calc(100vh - 220px);
+        }
+
+        .swim-lane-column {
+            background: #1a1a1a;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            padding: 16px;
+            overflow-y: auto;
+        }
+
+        .swim-lane-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 16px;
+        }
+
+        .swim-lane-header h3 {
+            font-size: 15px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .lane-count-indicator {
+            background: #333;
+            color: var(--text-dark);
+            font-size: 12px;
+            padding: 2px 8px;
+            border-radius: 12px;
+            margin-left: auto;
+        }
+
+        .playlist-draggable-card {
+            background: var(--bg-sidebar);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 12px;
+            cursor: grab;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .playlist-draggable-card:active {
+            cursor: grabbing;
+        }
+
+        .playlist-draggable-card.dragging {
+            opacity: 0.4;
+            border: 2px dashed var(--yt-blue);
+        }
+
+        .card-grip-handle {
+            color: var(--text-dark);
+            cursor: grab;
+        }
+
+        .card-thumb {
+            width: 64px;
+            height: 36px;
+            background: #333;
+            border-radius: 2px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .card-thumb-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #333;
+        }
+
+        .card-meta {
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .card-meta h4 {
+            font-size: 13px;
+            font-weight: 400;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 2px;
+        }
+
+        .card-meta p {
+            font-size: 11px;
+            color: var(--text-dark);
+        }
+
+        /* Persistent Feedback Toast Notification Layout */
+        .feedback-toast-container {
+            position: fixed;
+            bottom: -60px;
+            left: 320px;
+            background-color: #323232;
+            color: var(--text-light);
+            padding: 14px 24px;
+            border-radius: 4px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            gap: 48px;
+            z-index: 100;
+            font-size: 14px;
+            transition: bottom 0.25s ease-in-out;
+        }
+
+        .feedback-toast-container.active {
+            bottom: 24px;
+        }
+
+        .toast-undo-anchor {
+            color: var(--yt-blue);
+            text-transform: uppercase;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        /* Icons Styles Overrides */
+        .icon-public { color: #2ba640; }
+        .icon-private { color: #ff4e45; }
+        .icon-unlisted { color: #cca300; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-left">
+            <span class="material-icons-outlined menu-icon">menu</span>
+            <div class="logo-container">
+                <span class="material-icons-outlined logo-icon">play_circle_filled</span>
+                <span class="logo-text">Studio</span>
+                <span class="logo-subtext">Playlists Edition</span>
+            </div>
+        </div>
+        <div class="search-container">
+            <span class="material-icons-outlined">search</span>
+            <input type="text" placeholder="Search across your channel playlists...">
+        </div>
+        <div class="header-right">
+            <span class="material-icons-outlined">help_outline</span>
+            <div class="avatar">B3N</div>
+        </div>
+    </header>
+
+    <div class="workspace">
+        <aside>
+            <div class="creator-profile">
+                <div class="profile-pic">
+                    <span class="material-icons-outlined" style="font-size: 42px; color: var(--text-dark);">account_circle</span>
+                </div>
+                <div class="profile-name">Your Channel</div>
+                <div class="profile-handle">B3N</div>
+            </div>
+            <div class="nav-item"><span class="material-icons-outlined">dashboard</span>Dashboard</div>
+            <div class="nav-item active"><span class="material-icons-outlined">video_library</span>Content</div>
+            <div class="nav-item"><span class="material-icons-outlined">analytics</span>Analytics</div>
+            <div class="nav-item"><span class="material-icons-outlined">comment</span>Comments</div>
+            <div class="nav-item"><span class="material-icons-outlined">subtitles</span>Subtitles</div>
+            <div class="nav-item"><span class="material-icons-outlined">settings</span>Settings</div>
+        </aside>
+
+        <main>
+            <div class="macro-edit-toolbar" id="macroToolbar">
+                <div class="toolbar-count-status" id="toolbarCountText">0 selected</div>
+                <div class="toolbar-dropdown-anchor" id="editDropdownBtn">
+                    Edit <span class="material-icons-outlined" style="font-size: 16px;">arrow_drop_down</span>
+                    <div class="parameters-checklist-overlay" id="parametersOverlay">
+                        <div class="overlay-menu-row" id="visibilityMenuAction">
+                            <span>Visibility</span>
+                            <span class="material-icons-outlined" style="font-size: 16px;">chevron_right</span>
+                        </div>
+                        <div class="overlay-menu-row"><span>Description</span></div>
+                        <div class="overlay-menu-row"><span>Delete Playlist</span></div>
+                    </div>
+                </div>
+                <div class="toolbar-dropdown-anchor">More actions <span class="material-icons-outlined" style="font-size: 16px;">arrow_drop_down</span></div>
+                <span class="material-icons-outlined toolbar-close-icon" id="clearSelectionBtn">close</span>
+            </div>
+
+            <div class="state-slider-dialog-panel" id="stateSliderPanel">
+                <div class="slider-panel-row">
+                    <div class="slider-panel-title">Visibility</div>
+                    <select class="custom-select-wrapper" id="privacyStateSelect">
+                        <option value="" disabled selected>Select visibility state</option>
+                        <option value="Public">Public</option>
+                        <option value="Private">Private</option>
+                        <option value="Unlisted">Unlisted</option>
+                    </select>
+                    <div class="panel-action-buttons-group">
+                        <button class="panel-btn panel-btn-cancel" id="cancelPanelBtn">Cancel</button>
+                        <button class="panel-btn panel-btn-update" id="applyPanelBtn" disabled>Update playlists</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="content-header">
+                <h1>Channel content</h1>
+                <div class="tabs-container">
+                    <a href="#" class="tab">Videos</a>
+                    <a href="#" class="tab">Shorts</a>
+                    <a href="#" class="tab active">Playlists</a>
+                </div>
+            </div>
+
+            <div class="view-controls-panel">
+                <div class="filter-box">
+                    <span class="material-icons-outlined">filter_list</span> Filter
+                </div>
+                <div class="layout-toggle-group">
+                    <button class="toggle-btn active" id="switchListViewBtn">
+                        <span class="material-icons-outlined" style="font-size: 16px;">list</span> Cohesive List view
+                    </button>
+                    <button class="toggle-btn" id="switchBoardViewBtn">
+                        <span class="material-icons-outlined" style="font-size: 16px;">dashboard_customize</span> Spatial Board view
+                    </button>
+                </div>
+            </div>
+
+            <div class="view-wrapper">
+                <div class="view-layout active" id="listViewContainer">
+                    <table class="data-table-container">
+                        <thead>
+                            <tr>
+                                <th class="col-check"><input type="checkbox" id="selectAllCheckbox"></th>
+                                <th class="col-playlist">Playlist</th>
+                                <th class="col-type">Type</th>
+                                <th class="col-visibility">Visibility</th>
+                                <th class="col-updated">Last updated</th>
+                                <th class="col-count">Video count</th>
+                                <th class="col-views">Views</th>
+                            </tr>
+                        </thead>
+                        <tbody id="playlistTableBody">
+                            <!-- Populated dynamically via JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="view-layout" id="boardViewContainer">
+                    <div class="kanban-board-workspace">
+                        
+                        <div class="swim-lane-column" data-state="Public">
+                            <div class="swim-lane-header">
+                                <span class="material-icons-outlined icon-public">public</span>
+                                <h3>Public</h3>
+                                <div class="lane-count-indicator" id="count-Public">0</div>
+                            </div>
+                            <div class="cards-dropzone-container" style="flex:1;" id="lane-Public"></div>
+                        </div>
+
+                        <div class="swim-lane-column" data-state="Private">
+                            <div class="swim-lane-header">
+                                <span class="material-icons-outlined icon-private">lock</span>
+                                <h3>Private</h3>
+                                <div class="lane-count-indicator" id="count-Private">0</div>
+                            </div>
+                            <div class="cards-dropzone-container" style="flex:1;" id="lane-Private"></div>
+                        </div>
+
+                        <div class="swim-lane-column" data-state="Unlisted">
+                            <div class="swim-lane-header">
+                                <span class="material-icons-outlined icon-unlisted">link</span>
+                                <h3>Unlisted</h3>
+                                <div class="lane-count-indicator" id="count-Unlisted">0</div>
+                            </div>
+                            <div class="cards-dropzone-container" style="flex:1;" id="lane-Unlisted"></div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <div class="feedback-toast-container" id="feedbackToast">
+        <span id="toastMessageText">Successfully modified playlist privacy settings</span>
+        <a class="toast-undo-anchor" id="toastUndoBtn">Undo</a>
+    </div>
+
+    <script>
+        // Core Database State Baseline Engine Model
+        let playlistDatabase = [
+            { id: "pl1", title: "coffee", description: "Coffee brewing tutorials and techniques", type: "Playlist", visibility: "Public", lastUpdated: "7 Nov 2026", videoCount: 1, views: 12 },
+            { id: "pl2", title: "runs", description: "Running workouts and conditioning clips", type: "Playlist", visibility: "Private", lastUpdated: "3 Nov 2026", videoCount: 7, views: 0 },
+            { id: "pl3", title: "Music simpleton benny", description: "Classical tracks and jazz loops", type: "Playlist", visibility: "Private", lastUpdated: "24 Oct 2026", videoCount: 325, views: 971 },
+            { id: "pl4", title: "country music", description: "Acoustic country tracking logs", type: "Playlist", visibility: "Private", lastUpdated: "18 Oct 2026", videoCount: 3, views: 1 },
+            { id: "pl5", title: "Favourites", description: "High-retention video bookmarks", type: "Playlist", visibility: "Private", lastUpdated: "7 Sept 2026", videoCount: 1030, views: 358 },
+            { id: "pl6", title: "Music Disco Soul Groove Romantic", description: "70s and 80s dance mixes", type: "Playlist", visibility: "Private", lastUpdated: "31 Aug 2026", videoCount: 11, views: 4 },
+            { id: "pl7", title: "ps5", description: "Next-gen gameplay captures and walkthroughs", type: "Playlist", visibility: "Private", lastUpdated: "12 Oct 2026", videoCount: 2, views: 0 }
+        ];
+
+        // Preservation Cache state layer to empower instant Undo tolerance workflows
+        let databaseRollbackCache = null;
+
+        // Active layout view tracking context switches
+        let selectedPlaylistIds = [];
+
+        // DOM Element Cache Selectors
+        const playlistTableBody = document.getElementById('playlistTableBody');
+        const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+        const macroToolbar = document.getElementById('macroToolbar');
+        const toolbarCountText = document.getElementById('toolbarCountText');
+        const clearSelectionBtn = document.getElementById('clearSelectionBtn');
+        const editDropdownBtn = document.getElementById('editDropdownBtn');
+        const parametersOverlay = document.getElementById('parametersOverlay');
+        const visibilityMenuAction = document.getElementById('visibilityMenuAction');
+        const stateSliderPanel = document.getElementById('stateSliderPanel');
+        const privacyStateSelect = document.getElementById('privacyStateSelect');
+        const applyPanelBtn = document.getElementById('applyPanelBtn');
+        const cancelPanelBtn = document.getElementById('cancelPanelBtn');
+        const feedbackToast = document.getElementById('feedbackToast');
+        const toastMessageText = document.getElementById('toastMessageText');
+        const toastUndoBtn = document.getElementById('toastUndoBtn');
+        
+        const switchListViewBtn = document.getElementById('switchListViewBtn');
+        const switchBoardViewBtn = document.getElementById('switchBoardViewBtn');
+        const listViewContainer = document.getElementById('listViewContainer');
+        const boardViewContainer = document.getElementById('boardViewContainer');
+
+        // View Routing Layout Tab Click Modulators
+        switchListViewBtn.addEventListener('click', () => {
+            switchListViewBtn.classList.add('active');
+            switchBoardViewBtn.classList.remove('active');
+            listViewContainer.classList.add('active');
+            boardViewContainer.classList.remove('active');
+            synchronizeAndRenderViews();
+        });
+
+        switchBoardViewBtn.addEventListener('click', () => {
+            switchBoardViewBtn.classList.add('active');
+            switchListViewBtn.classList.remove('active');
+            boardViewContainer.classList.add('active');
+            listViewContainer.classList.remove('active');
+            clearSelectionState();
+            synchronizeAndRenderViews();
+        });
+
+        // Initialize Runtime Rendering Views Execution Engine Loops
+        function synchronizeAndRenderViews() {
+            renderListViewTable();
+            renderBoardViewSwimLanes();
+        }
+
+        // COMPONENT 1 ENGINE: Render Standard Data List Elements Grid Layout
+        function renderListViewTable() {
+            playlistTableBody.innerHTML = '';
+            playlistDatabase.forEach(pl => {
+                const isChecked = selectedPlaylistIds.includes(pl.id);
+                const tr = document.createElement('tr');
+                
+                let iconName = pl.visibility === 'Public' ? 'public' : pl.visibility === 'Private' ? 'lock' : 'link';
+                let iconClass = `icon-${pl.visibility.toLowerCase()}`;
+
+                tr.innerHTML = `
+                    <td><input type="checkbox" class="row-selector-checkbox" data-id="${pl.id}" ${isChecked ? 'checked' : ''}></td>
+                    <td class="playlist-cell">
+                        <div class="playlist-thumb-wrapper">
+                            <div class="card-thumb-placeholder">
+                                <span class="material-icons-outlined" style="font-size:32px; color:#555;">featured_play_list</span>
+                            </div>
+                            <div class="playlist-overlay-badge">
+                                <span class="material-icons-outlined" style="font-size:16px;">playlist_play</span>
+                                <span>${pl.videoCount}</span>
+                            </div>
+                        </div>
+                        <div class="playlist-meta">
+                            <h4>${pl.title}</h4>
+                            <p>${pl.description || 'Add description'}</p>
+                        </div>
+                    </td>
+                    <td>${pl.type}</td>
+                    <td>
+                        <div class="visibility-badge-inline">
+                            <span class="material-icons-outlined ${iconClass}">${iconName}</span>
+                            <span>${pl.visibility}</span>
+                        </div>
+                    </td>
+                    <td>${pl.lastUpdated}</td>
+                    <td>${pl.videoCount}</td>
+                    <td>${pl.views}</td>
+                `;
+                playlistTableBody.appendChild(tr);
+            });
+
+            // Re-attach inline element context event listeners to row boxes handles
+            document.querySelectorAll('.row-selector-checkbox').forEach(cb => {
+                cb.addEventListener('change', handleRowCheckboxToggle);
+            });
+        }
+
+        // COMPONENT 3 ENGINE: Render Spatial Kanban Board Column Swim Lanes View Layout
+        function renderBoardViewSwimLanes() {
+            const columns = { Public: document.getElementById('lane-Public'), Private: document.getElementById('lane-Private'), Unlisted: document.getElementById('lane-Unlisted') };
+            const counters = { Public: document.getElementById('count-Public'), Private: document.getElementById('count-Private'), Unlisted: document.getElementById('count-Unlisted') };
+            
+            Object.keys(columns).forEach(state => {
+                columns[state].innerHTML = '';
+                counters[state].textContent = 0;
+            });
+
+            let counts = { Public: 0, Private: 0, Unlisted: 0 };
+
+            playlistDatabase.forEach(pl => {
+                counts[pl.visibility]++;
+                const card = document.createElement('div');
+                card.classList.add('playlist-draggable-card');
+                card.setAttribute('draggable', 'true');
+                card.setAttribute('data-id', pl.id);
+
+                card.innerHTML = `
+                    <span class="material-icons-outlined card-grip-handle">drag_indicator</span>
+                    <div class="card-thumb">
+                        <div class="card-thumb-placeholder">
+                            <span class="material-icons-outlined" style="font-size:20px; color:#555; position:absolute; left:22px; top:8px;">featured_play_list</span>
+                        </div>
+                    </div>
+                    <div class="card-meta">
+                        <h4>${pl.title}</h4>
+                        <p>${pl.videoCount} videos</p>
+                    </div>
+                `;
+
+                // HTML5 Drag and Drop Interaction Event Bindings
+                card.addEventListener('dragstart', () => card.classList.add('dragging'));
+                card.addEventListener('dragend', () => card.classList.remove('dragging'));
+
+                if(columns[pl.visibility]) {
+                    columns[pl.visibility].appendChild(card);
+                }
+            });
+
+            Object.keys(counters).forEach(state => counters[state].textContent = counts[state]);
+            attachBoardDragDropZoneListeners();
+        }
+
+        function attachBoardDragDropZoneListeners() {
+            document.querySelectorAll('.swim-lane-column').forEach(column => {
+                column.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    column.style.backgroundColor = 'rgba(255, 255, 255, 0.02)';
+                });
+
+                column.addEventListener('dragleave', () => column.style.backgroundColor = 'transparent');
+
+                column.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    column.style.backgroundColor = 'transparent';
+                    const activeDraggedCard = document.querySelector('.dragging');
+                    if (!activeDraggedCard) return;
+
+                    const playlistTargetId = activeDraggedCard.getAttribute('data-id');
+                    const targetStateColumn = column.getAttribute('data-state');
+
+                    const targetAsset = playlistDatabase.find(p => p.id === playlistTargetId);
+                    if (targetAsset && targetAsset.visibility !== targetStateColumn) {
+                        // Capture snapshot layer for recovery tolerance
+                        cacheCurrentDatabaseStateSnapshot();
+                        
+                        targetAsset.visibility = targetStateColumn;
+                        targetAsset.lastUpdated = 'Today';
+                        
+                        synchronizeAndRenderViews();
+                        initializeFeedbackToastTrigger(`Moved "${targetAsset.title}" to ${targetStateColumn}`);
+                    }
+                });
+            });
+        }
+
+        // CONTROL MODULES: Manage Multi-Selection Tracking Rules
+        function handleRowCheckboxToggle(e) {
+            const targetId = e.target.getAttribute('data-id');
+            if (e.target.checked) {
+                if (!selectedPlaylistIds.includes(targetId)) selectedPlaylistIds.push(targetId);
+            } else {
+                selectedPlaylistIds = selectedPlaylistIds.filter(id => id !== targetId);
+            }
+            evaluateActiveToolbarVisualState();
+        }
+
+        selectAllCheckbox.addEventListener('change', (e) => {
+            if (e.target.checked) {
+                selectedPlaylistIds = playlistDatabase.map(pl => pl.id);
+            } else {
+                selectedPlaylistIds = [];
+            }
+            evaluateActiveToolbarVisualState();
+            renderListViewTable();
+        });
+
+        function evaluateActiveToolbarVisualState() {
+            const selectCount = selectedPlaylistIds.length;
+            if (selectCount > 0) {
+                macroToolbar.classList.add('visible');
+                toolbarCountText.textContent = `${selectCount} selected`;
+                selectAllCheckbox.checked = (selectCount === playlistDatabase.length);
+                selectAllCheckbox.indeterminate = (selectCount < playlistDatabase.length);
+            } else {
+                clearSelectionState();
+            }
+        }
+
+        function clearSelectionState() {
+            selectedPlaylistIds = [];
+            macroToolbar.classList.remove('visible');
+            parametersOverlay.classList.remove('open');
+            stateSliderPanel.classList.remove('open');
+            selectAllCheckbox.checked = false;
+            selectAllCheckbox.indeterminate = false;
+            privacyStateSelect.value = '';
+            applyPanelBtn.disabled = true;
+            document.querySelectorAll('.row-selector-checkbox').forEach(cb => cb.checked = false);
+        }
+
+        clearSelectionBtn.addEventListener('click', clearSelectionState);
+
+        // MODAL INTERACTION MECHANICS: Nested Menu Tree Overlay Controls
+        editDropdownBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            parametersOverlay.classList.toggle('open');
+        });
+
+        document.addEventListener('click', () => parametersOverlay.classList.remove('open'));
+
+        visibilityMenuAction.addEventListener('click', (e) => {
+            e.stopPropagation();
+            parametersOverlay.classList.remove('open');
+            stateSliderPanel.classList.add('open');
+        });
+
+        cancelPanelBtn.addEventListener('click', () => {
+            stateSliderPanel.classList.remove('open');
+            privacyStateSelect.value = '';
+            applyPanelBtn.disabled = true;
+        });
+
+        privacyStateSelect.addEventListener('change', () => {
+            applyPanelBtn.disabled = !privacyStateSelect.value;
+        });
+
+        // TRANSACTION CONTROL BLOCK: Apply Macro Changes with Tolerance Safeguards
+        applyPanelBtn.addEventListener('click', () => {
+            const targetState = privacyStateSelect.value;
+            if (!targetState || selectedPlaylistIds.length === 0) return;
+
+            // Capture snapshot layer before applying operations
+            cacheCurrentDatabaseStateSnapshot();
+
+            playlistDatabase = playlistDatabase.map(pl => {
+                if (selectedPlaylistIds.includes(pl.id)) {
+                    return { ...pl, visibility: targetState, lastUpdated: 'Today' };
+                }
+                return pl;
+            });
+
+            const updatedCount = selectedPlaylistIds.length;
+            clearSelectionState();
+            synchronizeAndRenderViews();
+            
+            initializeFeedbackToastTrigger(`Successfully updated privacy state for ${updatedCount} playlists to ${targetState}`);
+        });
+
+        // SYSTEM SAFETY ENGINE: Tolerance Rollback Snapshot Management
+        function cacheCurrentDatabaseStateSnapshot() {
+            databaseRollbackCache = JSON.stringify(playlistDatabase);
+        }
+
+        function initializeFeedbackToastTrigger(message) {
+            toastMessageText.textContent = message;
+            feedbackToast.classList.add('active');
+            
+            // Auto dismiss toast after 6 seconds if no recovery action executed
+            setTimeout(() => {
+                feedbackToast.classList.remove('active');
+            }, 6000);
+        }
+
+        toastUndoBtn.addEventListener('click', () => {
+            if (databaseRollbackCache) {
+                playlistDatabase = JSON.parse(databaseRollbackCache);
+                databaseRollbackCache = null;
+                feedbackToast.classList.remove('active');
+                synchronizeAndRenderViews();
+            }
+        });
+
+        // Initialize App Main Entry Frame Execution Path
+        synchronizeAndRenderViews();
+    </script>
+</body>
+</html>
